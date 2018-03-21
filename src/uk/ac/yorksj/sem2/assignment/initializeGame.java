@@ -1,7 +1,5 @@
 package uk.ac.yorksj.sem2.assignment;
 
-
-
 import javafx.application.Application;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
@@ -24,6 +22,7 @@ public class initializeGame extends Application {
 		Group root = new Group();
 		root.getChildren().add(getGripPane());
 		Scene scene = new Scene(root, 750, 700);
+		scene.getStylesheets().add(getClass().getResource("style.css").toExternalForm());
 		s.setScene(scene);
 		s.show();
 
@@ -32,24 +31,23 @@ public class initializeGame extends Application {
 	public GridPane getGripPane() {
 		GridPane pane = new GridPane();
 		board enemy = new board(false, e -> {
-		
-			
+
 		});
 		pane.add(enemy.getBoard(), 0, 0);
-		
-		player = new board(true, e -> {  
-			
+
+		player = new board(true, e -> {
+
 			player.placeShip(s1, e.getSource(), e.getButton() == MouseButton.PRIMARY);
-			
+
 		});
-		pane.add(player.getBoard(), 0,1);
+		pane.add(player.getBoard(), 0, 1);
 		pane.setVgap(35);
-		
+
 		return pane;
 	}
 
 	public void initiateGame() {
-		//place enemy ships
+		// place enemy ships
 	}
 
 }
