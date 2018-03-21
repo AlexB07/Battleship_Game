@@ -4,10 +4,12 @@ public class ships {
 
 	public int ship;
 	private int health;
+	private boolean north;
 
-	public ships(int type) {
+	public ships(int type, boolean north) {
 		this.ship = type;
 		this.health = type;
+		this.north = north;
 	}
 
 	public int getHealth() {
@@ -17,5 +19,16 @@ public class ships {
 	public int hit() {
 		return this.health--;
 	}
+	
+	public boolean getNorth() {
+		return this.north;
+	}
+	
+	public int getLength() {
+		return this.ship;
+	}
 
+	public void setNorth(boolean north) {
+		this.north = north; 
+	}
 }

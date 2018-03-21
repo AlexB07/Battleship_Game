@@ -1,10 +1,9 @@
 package uk.ac.yorksj.sem2.assignment;
 
-import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
-import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 
@@ -15,7 +14,7 @@ public class board extends Parent {
 	private Button[][] b = new Button[10][10];
 	private boolean vert = false;
 
-	public board(boolean who) {
+	public board(boolean who, EventHandler<MouseEvent> handle) {
 		this.player = who;
 		int size = 9;
 
@@ -24,40 +23,31 @@ public class board extends Parent {
 			for (int x = 0; x <= size; x++) {
 				b[x][y] = new Button();
 				b[x][y].setMinSize(30, 30);
+				b[x][y].setOnMouseClicked(handle);
 				pane.add(b[x][y], x, y);
-				Button btn = b[x][y];
+				// Button btn = b[x][y];
 				// Player board, eg. placing ships
-
-				if (this.player == true) {
-					btn.setOnMouseClicked(new EventHandler<MouseEvent>() {					
-						int tempX = GridPane.getColumnIndex(btn);
-						int tempY = GridPane.getRowIndex(btn);
-
-						public void handle(MouseEvent e) {
-							// TODO place ships
-							// set vertical ships
-							if (e.getButton().equals(MouseButton.PRIMARY)) {
-								for (int i = 0; i < 3; i++) {
-									getButton(tempX, tempY + i);
-								}
-							}
-						}
-					});
-				} else {
-
-					// Enemy Board, eg. attacking ships
-					btn.setOnAction(new EventHandler<ActionEvent>() {
-
-						@Override
-						public void handle(ActionEvent event) {
-							// TODO attack enemy board
-						}
-					});
-
-				}
 			}
 		}
 	}
+	
+	public void placeShip(ships ship, Object btn, boolean north) {
+		int tempX = GridPane.getColumnIndex((Node) btn);
+		int tempY = GridPane.getRowIndex((Node) btn);
+		
+		ship.setNorth(north);
+		if (ship.getNorth()) {
+			for (int i = 0; i < ship.getLength(); i++) {
+				getButton(tempX, tempY + i);
+			}
+		}else 
+			for (int i = 0; i < ship.getLength(); i++) {
+				getButton(tempX + i, tempY);
+			}
+		
+	}
+	
+	
 
 	public GridPane getBoard() {
 		return this.pane;
