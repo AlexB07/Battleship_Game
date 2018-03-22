@@ -6,10 +6,10 @@ public class ships {
 	private int health;
 	private boolean north;
 
-	public ships(int type, boolean north) {
+	public ships(int type) {
 		this.ship = type;
 		this.health = type;
-		this.north = north;
+		this.north = false;
 	}
 
 	public int getHealth() {

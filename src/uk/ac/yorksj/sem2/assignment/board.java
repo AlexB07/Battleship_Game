@@ -1,7 +1,6 @@
 package uk.ac.yorksj.sem2.assignment;
 
 import javafx.event.EventHandler;
-import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.input.MouseEvent;
@@ -12,7 +11,6 @@ public class board extends Parent {
 	private boolean player;
 	private GridPane pane = new GridPane();
 	private Button[][] b = new Button[10][10];
-	private boolean vert = false;
 
 	public board(boolean who, EventHandler<MouseEvent> handle) {
 		this.player = who;
@@ -31,10 +29,9 @@ public class board extends Parent {
 		}
 	}
 
-	public boolean placeShip(ships ship, Object btn, boolean north) {
-		int tempX = GridPane.getColumnIndex((Node) btn);
-		int tempY = GridPane.getRowIndex((Node) btn);
-
+	public boolean placeShip(ships ship, int x, int y, boolean north) {
+		int tempX = x;
+		int tempY = y;
 		ship.setNorth(north);
 
 		if (validPlaceShips(ship, tempX, tempY)) {
@@ -77,7 +74,7 @@ public class board extends Parent {
 				if (!(x + i >= 0 && x + i <= 9 && y >= 0 && y <= 9)) {
 					return false;
 				}
-				//Test to see space is empty
+				// Test to see space is empty
 				if (this.b[x + i][y].getText().equals("1")) {
 					return false;
 				}
@@ -94,5 +91,9 @@ public class board extends Parent {
 	public void getButton(int x, int y) {
 		this.b[x][y].setText("1");
 		this.b[x][y].getStyleClass().add("playerShip");
+	}
+
+	public Object getButtonLocation(int x, int y) {
+		return this.b[x][y];
 	}
 }
