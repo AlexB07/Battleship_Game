@@ -17,6 +17,9 @@ public class ships {
 	public int getHealth() {
 		return this.health;
 	}
+	public boolean alive() {
+		return (this.health > 0);
+	}
 
 	public int hit() {
 		return this.health--;

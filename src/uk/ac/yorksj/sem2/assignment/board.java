@@ -19,7 +19,7 @@ public class board extends Parent {
 		for (int y = 0; y <= size; y++) {
 
 			for (int x = 0; x <= size; x++) {
-				b[x][y] = new Button();
+				b[x][y] = new boardCells(); 
 				b[x][y].setMinSize(30, 30);
 				b[x][y].setOnMouseClicked(handle);
 				b[x][y].getStyleClass().add("background");
@@ -38,13 +38,13 @@ public class board extends Parent {
 		if (validPlaceShips(ship, tempX, tempY)) {
 			if (ship.getNorth()) {
 				for (int i = 0; i < ship.getLength(); i++) {
-					getButton(tempX, tempY + i, pl);
+					getButton(tempX, tempY + i, pl, ship);
 					
 				}
 				return true;
 			} else
 				for (int i = 0; i < ship.getLength(); i++) {
-					getButton(tempX + i, tempY, pl);
+					getButton(tempX + i, tempY, pl, ship);
 				}
 			return true;
 		} else
@@ -96,17 +96,25 @@ public class board extends Parent {
 	}
 
 	public void buttonHit(int x, int y) {
+		
 		this.b[x][y].setText("2");
 		this.b[x][y].getStyleClass().add("hit");
+		ships temp = this.b[x][y].getShip();
+		temp.hit();
+		if (!temp.alive()) {
+			System.out.println("You have sunk the enemy ship");
+		}
 	}
+	
 
-	public void getButton(int x, int y, boolean player) {
+	public void getButton(int x, int y, boolean player, ships ship) {
 		this.b[x][y].setText("1");
 		if (player) {
 			this.b[x][y].getStyleClass().clear();
 			this.b[x][y].getStyleClass().add("playerShip");
 			System.out.println("playerShip");
 		}
+		this.b[x][y].setShip(ship);
 	}
 
 	public Object getButtonLocation(int x, int y) {
