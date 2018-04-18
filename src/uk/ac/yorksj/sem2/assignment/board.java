@@ -95,7 +95,7 @@ public class board extends Parent {
 		this.b[x][y].getStyleClass().add("miss");
 	}
 
-	public void buttonHit(int x, int y) {
+	public boolean buttonHit(int x, int y) {
 		
 		this.b[x][y].setText("2");
 		this.b[x][y].getStyleClass().add("hit");
@@ -103,7 +103,10 @@ public class board extends Parent {
 		temp.hit();
 		if (!temp.alive()) {
 			System.out.println("You have sunk the enemy ship");
+			return true;
 		}
+		
+		return false;
 	}
 	
 

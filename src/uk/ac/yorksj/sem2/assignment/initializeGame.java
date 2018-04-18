@@ -24,6 +24,8 @@ public class initializeGame extends Application {
 	public static void main(String[] args) {
 		launch(args);
 	}
+	
+	//TODO  re-write board to accept ships list
 
 	public void start(Stage s) throws Exception {
 		Group root = new Group();
@@ -38,6 +40,7 @@ public class initializeGame extends Application {
 		initiateGame();
 
 	}
+	
 
 	public GridPane getGripPane() {
 		GridPane pane = new GridPane();
@@ -112,7 +115,10 @@ public class initializeGame extends Application {
 		if (btn.getText().equals("0") || btn.getText().equals("2")) {
 			return false;
 		} else if (btn.getText().equals("1")) {
-			bord.buttonHit(tempX, tempY);
+			 if (bord.buttonHit(tempX, tempY)) {
+				 
+				 
+			 }
 			return true;
 		} else
 			bord.buttonMiss(tempX, tempY);
