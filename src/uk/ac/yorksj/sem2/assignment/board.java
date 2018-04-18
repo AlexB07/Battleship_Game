@@ -10,7 +10,7 @@ public class board extends Parent {
 
 	private boolean player;
 	private GridPane pane = new GridPane();
-	private Button[][] b = new Button[10][10];
+	private boardCells[][] b = new boardCells[10][10];
 
 	public board(boolean who, EventHandler<MouseEvent> handle) {
 		this.player = who;
@@ -22,6 +22,7 @@ public class board extends Parent {
 				b[x][y] = new Button();
 				b[x][y].setMinSize(30, 30);
 				b[x][y].setOnMouseClicked(handle);
+				b[x][y].getStyleClass().add("background");
 				pane.add(b[x][y], x, y);
 				// Button btn = b[x][y];
 				// Player board, eg. placing ships
@@ -29,7 +30,7 @@ public class board extends Parent {
 		}
 	}
 
-	public boolean placeShip(ships ship, int x, int y, boolean north) {
+	public boolean placeShip(ships ship, int x, int y, boolean north, boolean pl) {
 		int tempX = x;
 		int tempY = y;
 		ship.setNorth(north);
@@ -37,12 +38,13 @@ public class board extends Parent {
 		if (validPlaceShips(ship, tempX, tempY)) {
 			if (ship.getNorth()) {
 				for (int i = 0; i < ship.getLength(); i++) {
-					getButton(tempX, tempY + i);
+					getButton(tempX, tempY + i, pl);
+					
 				}
 				return true;
 			} else
 				for (int i = 0; i < ship.getLength(); i++) {
-					getButton(tempX + i, tempY);
+					getButton(tempX + i, tempY, pl);
 				}
 			return true;
 		} else
@@ -88,9 +90,23 @@ public class board extends Parent {
 		return this.pane;
 	}
 
-	public void getButton(int x, int y) {
+	public void buttonMiss(int x, int y) {
+		this.b[x][y].setText("0");
+		this.b[x][y].getStyleClass().add("miss");
+	}
+
+	public void buttonHit(int x, int y) {
+		this.b[x][y].setText("2");
+		this.b[x][y].getStyleClass().add("hit");
+	}
+
+	public void getButton(int x, int y, boolean player) {
 		this.b[x][y].setText("1");
-		this.b[x][y].getStyleClass().add("playerShip");
+		if (player) {
+			this.b[x][y].getStyleClass().clear();
+			this.b[x][y].getStyleClass().add("playerShip");
+			System.out.println("playerShip");
+		}
 	}
 
 	public Object getButtonLocation(int x, int y) {

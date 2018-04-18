@@ -5,11 +5,13 @@ public class ships {
 	public int ship;
 	private int health;
 	private boolean north;
+	public int[][] pos;
 
 	public ships(int type) {
 		this.ship = type;
 		this.health = type;
 		this.north = false;
+		pos = new int[type][type];
 	}
 
 	public int getHealth() {
@@ -31,4 +33,6 @@ public class ships {
 	public void setNorth(boolean north) {
 		this.north = north; 
 	}
+	
+	
 }

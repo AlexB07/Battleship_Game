@@ -1,6 +1,33 @@
 a {}
 
-.playerShip {
+.background {
 	-fx-background-color: #214a8c;
-	-fx-text-fill: #214a8c
+	-fx-text-fill: #214a8c;
+	-fx-border-color:#000000;
+	-fx-border-width: 2px;
+	-fx-border-style: solid;
 	}
+	
+.playerShip {
+	-fx-background-color: #474747;
+	-fx-text-fill: #474747;
+	-fx-border-color:#000000;
+	-fx-border-width: 2px;
+	-fx-border-style: solid;
+}
+
+.hit {
+	-fx-background-color: #ff0000;
+	-fx-text-fill: #ff0000;
+	-fx-border-color:#000000;
+	-fx-border-width: 2px;
+	-fx-border-style: solid;
+}
+
+.miss{
+	-fx-background-color: #ffffff;
+	-fx-text-fill: #ffffff;
+	-fx-border-color:#000000;
+	-fx-border-width: 2px;
+	-fx-border-style: solid;
+}
