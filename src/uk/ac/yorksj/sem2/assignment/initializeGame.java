@@ -12,13 +12,10 @@ import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 
 public class initializeGame extends Application {
-	private boolean playerTurn = false;
+	private boolean playerTurn = true;
 	private board player;
 	private board enemy;
-	private ArrayList<ships> playerShips = new ArrayList<ships>();
-	private ArrayList<ships> enemyShips = new ArrayList<ships>();
 	private int shipCount = 0;
-	private ships s1 = new ships(4);
 	private boolean game = true;
 
 	public static void main(String[] args) {
@@ -35,9 +32,6 @@ public class initializeGame extends Application {
 		s.setScene(scene);
 		s.show();
 		s.setTitle("BattleShip Game");
-		playerShips = initateShips();
-		enemyShips = initateShips();
-		initiateGame();
 
 	}
 	
@@ -68,10 +62,10 @@ public class initializeGame extends Application {
 
 			Button btn = (Button) e.getSource();
 			if (playerTurn) {
-				if (shipCount < playerShips.size()) {
-					playerShips.get(shipCount).setNorth(e.getButton() == MouseButton.PRIMARY);
-					if (player.placeShip(playerShips.get(shipCount), GridPane.getColumnIndex(btn),
-							GridPane.getRowIndex(btn), playerShips.get(shipCount).getNorth(), playerTurn)) {
+				if (shipCount < player.getShipSize()) {
+					player.getships().get(shipCount).setNorth(e.getButton() == MouseButton.PRIMARY);
+					if (player.placeShip(player.getships().get(shipCount), GridPane.getColumnIndex(btn),
+							GridPane.getRowIndex(btn), player.getships().get(shipCount).getNorth(), playerTurn)) {
 						shipCount++;
 					}
 					;
@@ -85,29 +79,6 @@ public class initializeGame extends Application {
 		return pane;
 	}
 
-	public ArrayList<ships> initateShips() {
-		ArrayList<ships> temp = new ArrayList<ships>();
-
-		ships airCraft = new ships(5);
-		ships battleShip1 = new ships(4);
-		ships battleShip2 = new ships(4);
-		ships desstroyers1 = new ships(3);
-		ships desstroyers2 = new ships(3);
-		ships patrol1 = new ships(2);
-		ships patrol2 = new ships(2);
-		ships patrol3 = new ships(2);
-
-		temp.add(airCraft);
-		temp.add(desstroyers1);
-		temp.add(desstroyers2);
-		temp.add(battleShip1);
-		temp.add(battleShip2);
-		temp.add(patrol1);
-		temp.add(patrol2);
-		temp.add(patrol3);
-
-		return temp;
-	}
 
 	public boolean hitAndMiss(board bord, Button btn) {
 		int tempX = GridPane.getColumnIndex(btn);
@@ -136,13 +107,13 @@ public class initializeGame extends Application {
 		int y = 0;
 		Random rd = new Random();
 		System.out.println(shipsCount);
-		while (shipsCount < enemyShips.size()) {
+		while (shipsCount < enemy.getShipSize()) {
 			// System.out.println("test: " + shipsCount); // test purpose
 			x = rd.nextInt(10);
 			y = rd.nextInt(10);
 			// System.out.println("X: " + x + ", Y: " + y);
 			// btn = (Button) enemy.getButtonLocation(x, y);
-			if (enemy.placeShip(enemyShips.get(shipsCount), x, y, true, playerTurn)) {
+			if (enemy.placeShip(enemy.getships().get(shipsCount), x, y, true, playerTurn)) {
 				shipsCount++;
 			}
 
