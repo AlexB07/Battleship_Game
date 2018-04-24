@@ -2,7 +2,7 @@ a {}
 
 .background {
 	-fx-background-color: #214a8c;
-	-fx-text-fill: #214a8c;
+	-fx-text-fill: #000000;
 	-fx-border-color:#000000;
 	-fx-border-width: 2px;
 	-fx-border-style: solid;
