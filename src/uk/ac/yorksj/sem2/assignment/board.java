@@ -12,16 +12,15 @@ public class board extends Parent {
 
 	private boolean player;
 	private GridPane pane = new GridPane();
-	private boardCells[][] b = new boardCells[10][10];
+	private boardCells[][] b = new boardCells[initializeGame.getSetting(0)][initializeGame.getSetting(0)];
 	private ArrayList<ships> ships = new ArrayList<ships>();
 
 	public board(boolean who, EventHandler<MouseEvent> handle) {
 		this.player = who;
-		int size = 9;
 
-		for (int y = 0; y <= size; y++) {
+		for (int y = 0; y < b.length; y++) {
 
-			for (int x = 0; x <= size; x++) {
+			for (int x = 0; x < b.length; x++) {
 				b[x][y] = new boardCells(); 
 				b[x][y].setMinSize(30, 30);
 				b[x][y].setOnMouseClicked(handle);
@@ -37,8 +36,28 @@ public class board extends Parent {
 	
 	public ArrayList<ships> initateShips() {
 		ArrayList<ships> temp = new ArrayList<ships>();
-
-		ships airCraft = new ships(5);
+		//aircraft ships
+		for (int i = 0; i < initializeGame.getSetting(1); i++) {
+			temp.add(new ships(5));
+		}
+		
+		//battleship
+		for (int i = 0; i < initializeGame.getSetting(2); i++) {
+			temp.add(new ships(4));
+		}
+		
+		//destroyer ship
+		for (int i = 0; i < initializeGame.getSetting(3); i++) {
+			temp.add(new ships(3));
+		}
+		
+		//patrol Ships
+		for (int i = 0; i < initializeGame.getSetting(4); i++) {
+			temp.add(new ships(2));
+		}
+		
+		
+		/*ships airCraft = new ships(5);
 		ships battleShip1 = new ships(4);
 		ships battleShip2 = new ships(4);
 		ships desstroyers1 = new ships(3);
@@ -55,7 +74,7 @@ public class board extends Parent {
 		temp.add(patrol1);
 		temp.add(patrol2);
 		temp.add(patrol3);
-
+*/
 		return temp;
 	}
 
