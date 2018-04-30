@@ -79,12 +79,12 @@ public class board extends Parent {
 	}
 
 
-	public boolean placeShip(ships ship, int x, int y, boolean north, boolean pl) {
+	public boolean placeShip(ships ship, int x, int y, boolean north, boolean pl, int boardSize) {
 		int tempX = x;
 		int tempY = y;
 		ship.setNorth(north);
 
-		if (validPlaceShips(ship, tempX, tempY)) {
+		if (validPlaceShips(ship, tempX, tempY, boardSize)) {
 			if (ship.getNorth()) {
 				for (int i = 0; i < ship.getLength(); i++) {
 					getButton(tempX, tempY + i, pl, ship);
@@ -100,14 +100,14 @@ public class board extends Parent {
 			return false;
 	}
 
-	public boolean validPlaceShips(ships ship, int x, int y) {
+	public boolean validPlaceShips(ships ship, int x, int y, int boardSize) {
 
 		if (ship.getNorth()) {
 
 			for (int i = 0; i < ship.getLength(); i++) {
 
 				// Test for in board
-				if (!(x >= 0 && x <= 9 && y + i >= 0 && y + i <= 9)) {
+				if (!(x >= 0 && x <= boardSize-1 && y + i >= 0 && y + i <= boardSize-1)) {
 					return false;
 				}
 
@@ -122,7 +122,7 @@ public class board extends Parent {
 			for (int i = 0; i < ship.getLength(); i++) {
 
 				// Test for in board
-				if (!(x + i >= 0 && x + i <= 9 && y >= 0 && y <= 9)) {
+				if (!(x + i >= 0 && x + i <= boardSize-1 && y >= 0 && y <= boardSize-1)) {
 					return false;
 				}
 				// Test to see space is empty

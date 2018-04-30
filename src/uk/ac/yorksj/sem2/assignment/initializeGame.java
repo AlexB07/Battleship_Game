@@ -2,6 +2,7 @@ package uk.ac.yorksj.sem2.assignment;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.Scanner;
@@ -45,9 +46,10 @@ public class initializeGame extends Application {
 	}
 
 	// Read File
-	public static void readFile() throws FileNotFoundException {
+	public void readFile() throws FileNotFoundException {
+		settings = new ArrayList<Integer>();
 
-		String path ="/settings.txt";
+		String path ="settings.txt";
 		try {
 			File file = new File(path);
 			Scanner fileSc = new Scanner(file);
@@ -55,12 +57,27 @@ public class initializeGame extends Application {
 			while (fileSc.hasNextInt()) {
 				settings.add(fileSc.nextInt());
 			}
-
+			
+		
 			fileSc.close();
 		} catch (FileNotFoundException e) {
 			System.err.println("[ERROR] File does not exist");
 		}
+		
+		if (settings.size() == 0) {
+			initSettings();
+		}
 
+	}
+	
+	public void writeFile() throws FileNotFoundException{
+		String path = "settings.txt";
+		File file = new File(path);
+		PrintWriter pw = new PrintWriter(file);
+		for (int i = 0; i < settings.size(); i++) {
+			pw.println(settings.get(i));
+		} 
+		pw.close();
 	}
 
 	public void start(Stage s) throws FileNotFoundException {
@@ -193,12 +210,16 @@ public class initializeGame extends Application {
 				settings.add(battleShipsField.getValue());
 				settings.add(destroyerField.getValue());
 				settings.add(patrolField.getValue());
-
+				try {
+					writeFile();
+				} catch (FileNotFoundException e1) {
+					System.err.println("[ERROR] File Not found!");
+				}
 				s.hide();
 				try {
 					start(s);
 				} catch (FileNotFoundException e) {
-					e.printStackTrace();
+					System.err.println("[ERROR] File Not found!");
 				}
 
 			}
@@ -249,7 +270,7 @@ public class initializeGame extends Application {
 				if (shipCount < player.getShipSize()) {
 					player.getships().get(shipCount).setNorth(e.getButton() == MouseButton.PRIMARY);
 					if (player.placeShip(player.getships().get(shipCount), GridPane.getColumnIndex(btn),
-							GridPane.getRowIndex(btn), player.getships().get(shipCount).getNorth(), playerTurn)) {
+							GridPane.getRowIndex(btn), player.getships().get(shipCount).getNorth(), playerTurn, settings.get(0))) {
 						shipCount++;
 
 						if (shipCount >= player.getShipSize()) {
@@ -322,11 +343,13 @@ public class initializeGame extends Application {
 		int shipsCount = 0;
 		int x = 0;
 		int y = 0;
+		int num = 0;
 		Random rd = new Random();
 		while (shipsCount < enemy.getShipSize()) {
-			x = rd.nextInt(10);
-			y = rd.nextInt(10);
-			if (enemy.placeShip(enemy.getships().get(shipsCount), x, y, true, playerTurn)) {
+			x = rd.nextInt(settings.get(0));
+			y = rd.nextInt(settings.get(0));
+			num = rd.nextInt(10);
+			if (enemy.placeShip(enemy.getships().get(shipsCount), x, y, num % 2 == 0, playerTurn, settings.get(0))) {
 				shipsCount++;
 			}
 
