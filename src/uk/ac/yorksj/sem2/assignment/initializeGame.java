@@ -49,7 +49,7 @@ public class initializeGame extends Application {
 	public void readFile() throws FileNotFoundException {
 		settings = new ArrayList<Integer>();
 
-		String path ="settings.txt";
+		String path = "settings.txt";
 		try {
 			File file = new File(path);
 			Scanner fileSc = new Scanner(file);
@@ -57,26 +57,25 @@ public class initializeGame extends Application {
 			while (fileSc.hasNextInt()) {
 				settings.add(fileSc.nextInt());
 			}
-			
-		
+
 			fileSc.close();
 		} catch (FileNotFoundException e) {
 			System.err.println("[ERROR] File does not exist");
 		}
-		
+
 		if (settings.size() == 0) {
 			initSettings();
 		}
 
 	}
-	
-	public void writeFile() throws FileNotFoundException{
+
+	public void writeFile() throws FileNotFoundException {
 		String path = "settings.txt";
 		File file = new File(path);
 		PrintWriter pw = new PrintWriter(file);
 		for (int i = 0; i < settings.size(); i++) {
 			pw.println(settings.get(i));
-		} 
+		}
 		pw.close();
 	}
 
@@ -248,6 +247,7 @@ public class initializeGame extends Application {
 						game = false;
 					} else {
 						playerTurn = false;
+
 						enemyTurn();
 					}
 				}
@@ -270,7 +270,8 @@ public class initializeGame extends Application {
 				if (shipCount < player.getShipSize()) {
 					player.getships().get(shipCount).setNorth(e.getButton() == MouseButton.PRIMARY);
 					if (player.placeShip(player.getships().get(shipCount), GridPane.getColumnIndex(btn),
-							GridPane.getRowIndex(btn), player.getships().get(shipCount).getNorth(), playerTurn, settings.get(0))) {
+							GridPane.getRowIndex(btn), player.getships().get(shipCount).getNorth(), playerTurn,
+							settings.get(0))) {
 						shipCount++;
 
 						if (shipCount >= player.getShipSize()) {
@@ -323,15 +324,16 @@ public class initializeGame extends Application {
 		if (btn.getText().equals("0") || btn.getText().equals("2")) {
 			return false;
 		} else if (btn.getText().equals("1")) {
-			if (bord.buttonHit(tempX, tempY)) {
+			if (bord.buttonHit(tempX, tempY, bord.getPlayer() == false)) {
 				// Hit battleship message TODO
 				// append text
 			}
 			return true;
 
 		} else
-			bord.buttonMiss(tempX, tempY);
+			bord.buttonMiss(tempX, tempY, bord.getPlayer() == false);
 		return true;
+
 	}
 
 	public void initiateGame() {

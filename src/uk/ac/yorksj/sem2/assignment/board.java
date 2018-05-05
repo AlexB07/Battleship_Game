@@ -21,63 +21,55 @@ public class board extends Parent {
 		for (int y = 0; y < b.length; y++) {
 
 			for (int x = 0; x < b.length; x++) {
-				b[x][y] = new boardCells(); 
+				b[x][y] = new boardCells();
 				b[x][y].setMinSize(30, 30);
 				b[x][y].setOnMouseClicked(handle);
 				b[x][y].getStyleClass().add("background");
 				pane.add(b[x][y], x, y);
-				// Button btn = b[x][y];
-				// Player board, eg. placing ships
 			}
 		}
-		
+
 		this.ships = initateShips();
 	}
 	
+	public boolean getPlayer() {
+		return this.player;
+	}
+
 	public ArrayList<ships> initateShips() {
 		ArrayList<ships> temp = new ArrayList<ships>();
-		//aircraft ships
+		// aircraft ships
 		for (int i = 0; i < initializeGame.getSetting(1); i++) {
 			temp.add(new ships(5));
 		}
-		
-		//battleship
+
+		// battleship
 		for (int i = 0; i < initializeGame.getSetting(2); i++) {
 			temp.add(new ships(4));
 		}
-		
-		//destroyer ship
+
+		// destroyer ship
 		for (int i = 0; i < initializeGame.getSetting(3); i++) {
 			temp.add(new ships(3));
 		}
-		
-		//patrol Ships
+
+		// patrol Ships
 		for (int i = 0; i < initializeGame.getSetting(4); i++) {
 			temp.add(new ships(2));
 		}
-		
-		
-		/*ships airCraft = new ships(5);
-		ships battleShip1 = new ships(4);
-		ships battleShip2 = new ships(4);
-		ships desstroyers1 = new ships(3);
-		ships desstroyers2 = new ships(3);
-		ships patrol1 = new ships(2);
-		ships patrol2 = new ships(2);
-		ships patrol3 = new ships(2);
 
-		temp.add(airCraft);
-		temp.add(desstroyers1);
-		temp.add(desstroyers2);
-		temp.add(battleShip1);
-		temp.add(battleShip2);
-		temp.add(patrol1);
-		temp.add(patrol2);
-		temp.add(patrol3);
-*/
+		/*
+		 * ships airCraft = new ships(5); ships battleShip1 = new ships(4); ships
+		 * battleShip2 = new ships(4); ships desstroyers1 = new ships(3); ships
+		 * desstroyers2 = new ships(3); ships patrol1 = new ships(2); ships patrol2 =
+		 * new ships(2); ships patrol3 = new ships(2);
+		 * 
+		 * temp.add(airCraft); temp.add(desstroyers1); temp.add(desstroyers2);
+		 * temp.add(battleShip1); temp.add(battleShip2); temp.add(patrol1);
+		 * temp.add(patrol2); temp.add(patrol3);
+		 */
 		return temp;
 	}
-
 
 	public boolean placeShip(ships ship, int x, int y, boolean north, boolean pl, int boardSize) {
 		int tempX = x;
@@ -88,7 +80,7 @@ public class board extends Parent {
 			if (ship.getNorth()) {
 				for (int i = 0; i < ship.getLength(); i++) {
 					getButton(tempX, tempY + i, pl, ship);
-					
+
 				}
 				return true;
 			} else
@@ -107,7 +99,7 @@ public class board extends Parent {
 			for (int i = 0; i < ship.getLength(); i++) {
 
 				// Test for in board
-				if (!(x >= 0 && x <= boardSize-1 && y + i >= 0 && y + i <= boardSize-1)) {
+				if (!(x >= 0 && x <= boardSize - 1 && y + i >= 0 && y + i <= boardSize - 1)) {
 					return false;
 				}
 
@@ -122,7 +114,7 @@ public class board extends Parent {
 			for (int i = 0; i < ship.getLength(); i++) {
 
 				// Test for in board
-				if (!(x + i >= 0 && x + i <= boardSize-1 && y >= 0 && y <= boardSize-1)) {
+				if (!(x + i >= 0 && x + i <= boardSize - 1 && y >= 0 && y <= boardSize - 1)) {
 					return false;
 				}
 				// Test to see space is empty
@@ -139,26 +131,31 @@ public class board extends Parent {
 		return this.pane;
 	}
 
-	public void buttonMiss(int x, int y) {
+	public void buttonMiss(int x, int y, boolean player) {
+		if (player) {
+			new Audio("miss.mp3");
+		}
 		this.b[x][y].setText("0");
 		this.b[x][y].getStyleClass().add("miss");
 	}
 
-	public boolean buttonHit(int x, int y) {
-		
+	public boolean buttonHit(int x, int y, boolean player) {
+		if (player) {
+			new Audio("hit.mp3");
+		}
 		this.b[x][y].setText("2");
 		this.b[x][y].getStyleClass().add("hit");
 		ships temp = this.b[x][y].getShip();
 		temp.hit();
 		if (!temp.alive()) {
 			removeShip(this.ships.indexOf(temp));
+			// sink.start();
 			System.out.println("You sunk a ship");
 			return true;
 		}
-		
+
 		return false;
 	}
-	
 
 	public void getButton(int x, int y, boolean player, ships ship) {
 		this.b[x][y].setText("1");
@@ -173,17 +170,16 @@ public class board extends Parent {
 	public Object getButtonLocation(int x, int y) {
 		return this.b[x][y];
 	}
-	
+
 	public int getShipSize() {
 		return this.ships.size();
 	}
-	
+
 	public ArrayList<ships> getships() {
 		return this.ships;
 	}
-	
+
 	public void removeShip(int i) {
 		this.ships.remove(i);
 	}
 }
-
