@@ -40,43 +40,12 @@ public class initializeGame extends Application {
 	private boolean game = false;
 	private Rectangle nextShip = new Rectangle();
 	private static ArrayList<Integer> settings = new ArrayList<Integer>();
+	private ArrayList<Integer> dirMemoryX = new ArrayList<Integer>();
+	private ArrayList<Integer> dirMemoryY = new ArrayList<Integer>();
+	private Random rd = new Random();
 
 	public static void main(String[] args) {
 		launch(args);
-	}
-
-	// Read File
-	public void readFile() throws FileNotFoundException {
-		settings = new ArrayList<Integer>();
-
-		String path = "settings.txt";
-		try {
-			File file = new File(path);
-			Scanner fileSc = new Scanner(file);
-
-			while (fileSc.hasNextInt()) {
-				settings.add(fileSc.nextInt());
-			}
-
-			fileSc.close();
-		} catch (FileNotFoundException e) {
-			System.err.println("[ERROR] File does not exist");
-		}
-
-		if (settings.size() == 0) {
-			initSettings();
-		}
-
-	}
-
-	public void writeFile() throws FileNotFoundException {
-		String path = "settings.txt";
-		File file = new File(path);
-		PrintWriter pw = new PrintWriter(file);
-		for (int i = 0; i < settings.size(); i++) {
-			pw.println(settings.get(i));
-		}
-		pw.close();
 	}
 
 	public void start(Stage s) throws FileNotFoundException {
@@ -135,6 +104,40 @@ public class initializeGame extends Application {
 
 	}
 
+	// Read File
+	public void readFile() throws FileNotFoundException {
+		settings = new ArrayList<Integer>();
+
+		String path = "settings.txt";
+		try {
+			File file = new File(path);
+			Scanner fileSc = new Scanner(file);
+
+			while (fileSc.hasNextInt()) {
+				settings.add(fileSc.nextInt());
+			}
+
+			fileSc.close();
+		} catch (FileNotFoundException e) {
+			System.err.println("[ERROR] File does not exist");
+		}
+
+		if (settings.size() == 0) {
+			initSettings();
+		}
+
+	}
+
+	public void writeFile() throws FileNotFoundException {
+		String path = "settings.txt";
+		File file = new File(path);
+		PrintWriter pw = new PrintWriter(file);
+		for (int i = 0; i < settings.size(); i++) {
+			pw.println(settings.get(i));
+		}
+		pw.close();
+	}
+
 	public void settingStage(Stage s) {
 
 		ObservableList<Integer> options = FXCollections.observableArrayList(0, 1, 2, 3, 4, 5);
@@ -191,37 +194,58 @@ public class initializeGame extends Application {
 		patrolField.setValue(settings.get(4));
 		grid.add(patrolField, 1, 6);
 
+		Text message = new Text();
+		grid.add(message, 1, 7);
+
 		Button submit = new Button("Save Settings");
-		grid.add(submit, 1, 7);
+		grid.add(submit, 1, 8);
+
+		Text note = new Text("NOTE: Max gridsize is 6 to 19. This will be \n"
+				+ "values out of this range, will be set to default value \n" + "or 10.");
+		note.setFill(Color.DARKGREEN);
+		grid.add(note, 2, 5);
 
 		submit.setOnAction(new EventHandler<ActionEvent>() {
 
 			@Override
 			public void handle(ActionEvent arg0) {
-				settings = new ArrayList<Integer>();
-				if ((gridSizeField.getText() == "") || (Integer.parseInt(gridSizeField.getText()) < 5)
-						|| (Integer.parseInt(gridSizeField.getText()) > 20)) {
-					gridSizeField.setText("10");
-				}
 
-				settings.add(Integer.parseInt(gridSizeField.getText()));
-				settings.add(airCraftField.getValue());
-				settings.add(battleShipsField.getValue());
-				settings.add(destroyerField.getValue());
-				settings.add(patrolField.getValue());
-				try {
-					writeFile();
-				} catch (FileNotFoundException e1) {
-					System.err.println("[ERROR] File Not found!");
-				}
-				s.hide();
-				try {
-					start(s);
-				} catch (FileNotFoundException e) {
-					System.err.println("[ERROR] File Not found!");
-				}
+				int totalSquares = 0;
+				// total boat squares taken up by boats, plus a error margin
+				totalSquares = (airCraftField.getValue() * 5) + (battleShipsField.getValue() * 4)
+						+ (destroyerField.getValue() * 3) + (patrolField.getValue() * 2) + 10;
 
+				if (totalSquares <= Math.pow(Integer.parseInt(gridSizeField.getText()), 2)) {
+					settings = new ArrayList<Integer>();
+					if ((gridSizeField.getText() == "") || (Integer.parseInt(gridSizeField.getText()) < 5)
+							|| (Integer.parseInt(gridSizeField.getText()) > 20)) {
+						gridSizeField.setText("10");
+					}
+					// load settings
+					settings.add(Integer.parseInt(gridSizeField.getText()));
+					settings.add(airCraftField.getValue());
+					settings.add(battleShipsField.getValue());
+					settings.add(destroyerField.getValue());
+					settings.add(patrolField.getValue());
+					try {
+						writeFile();
+					} catch (FileNotFoundException e1) {
+						System.err.println("[ERROR] File Not found!");
+					}
+					s.hide();
+					try {
+						start(s);
+					} catch (FileNotFoundException e) {
+						System.err.println("[ERROR] File Not found!");
+					}
+
+				} else {
+					message.setFill(Color.FIREBRICK);
+					message.setText(
+							"Invalid Set up, please either choose a \n  " + "higher board size " + "or less boats");
+				}
 			}
+
 		});
 		s.show();
 
@@ -239,7 +263,7 @@ public class initializeGame extends Application {
 	public GridPane getGripPane() {
 		GridPane pane = new GridPane();
 		enemy = new board(false, e -> {
-			if (game) {
+			if ((game) && (playerTurn)) {
 				Button btn = (Button) e.getSource();
 				if (hitAndMiss(enemy, btn)) {
 					if (enemy.getShipSize() == 0) {
@@ -248,7 +272,7 @@ public class initializeGame extends Application {
 					} else {
 						playerTurn = false;
 
-						enemyTurn();
+						AIShoot();
 					}
 				}
 
@@ -296,11 +320,13 @@ public class initializeGame extends Application {
 		next.setFont(Font.font("Tahoma", FontWeight.NORMAL, 12));
 		pane.add(next, 0, 2);
 		pane.add(playerTitle, 0, 0);
+		// Works out where to place next ship, when changing the board size
 		if (settings.get(0) >= 10) {
 			nextShip = new Rectangle(60, 390 + ((settings.get(0) - 10) * 30),
 					(player.getships().get(0).getLength() * 30), 30);
 		} else if (settings.get(0) < 10) {
-			nextShip = new Rectangle(60, 390 - (settings.get(0) * 30), (player.getships().get(0).getLength() * 30), 30);
+			nextShip = new Rectangle(60, 390 - ((10 - settings.get(0)) * 30),
+					(player.getships().get(0).getLength() * 30), 30);
 		}
 
 		nextShip.setFill(Color.BLUE);
@@ -314,6 +340,7 @@ public class initializeGame extends Application {
 		return pane;
 	}
 
+	// Updates current next ship display on user interface
 	public void showCurrentShip(int length) {
 		nextShip.setWidth(length * 30);
 	}
@@ -325,8 +352,16 @@ public class initializeGame extends Application {
 			return false;
 		} else if (btn.getText().equals("1")) {
 			if (bord.buttonHit(tempX, tempY, bord.getPlayer() == false)) {
+				System.out.println("hit ");
+				if (bord.getPlayer() == true) {
+					System.out.println("Target Mode Activated");
+					targetMode(tempX, tempY);
+
+				}
+
 				// Hit battleship message TODO
 				// append text
+
 			}
 			return true;
 
@@ -342,6 +377,7 @@ public class initializeGame extends Application {
 	}
 
 	public void placeEnemyShips() {
+
 		int shipsCount = 0;
 		int x = 0;
 		int y = 0;
@@ -359,33 +395,92 @@ public class initializeGame extends Application {
 
 	}
 
-	public void enemyTurn() {
-		int y = 0;
-		int x = 0;
-		boolean temp = false;
-		Random rd = new Random();
-		x = rd.nextInt(10);
-		y = rd.nextInt(10);
-
-		if (hitAndMiss(player, (Button) player.getButtonLocation(x, y))) {
-			playerTurn = true;
-		} else {
-			enemyTurn();
+	// Computer AI
+	public void targetMode(int xx, int yy) {
+		int x = xx;
+		int y = yy;
+		System.out.println("added");
+		if ((x + 1 < settings.get(0))
+				&& ((player.checkButton(x + 1, y).equals("") || (player.checkButton(x + 1, y).equals("1"))))) {
+			dirMemoryX.add(x + 1);
+			dirMemoryY.add(y);
 		}
+		if ((y + 1 < settings.get(0))
+				&& ((player.checkButton(x, y + 1).equals("") || (player.checkButton(x, y + 1).equals("1"))))) {
+			dirMemoryX.add(x);
+			dirMemoryY.add(y + 1);
+		}
+		if ((x - 1 >= 0) && ((player.checkButton(x - 1, y).equals("") || (player.checkButton(x - 1, y).equals("1"))))) {
+			dirMemoryX.add(x - 1);
+			dirMemoryY.add(y);
+		}
+		if ((y - 1 >= 0) && ((player.checkButton(x, y - 1).equals("") || (player.checkButton(x, y - 1).equals("1"))))) {
+			dirMemoryX.add(x);
+			dirMemoryY.add(y - 1);
+		}
+
+		for (int i = 0; i < dirMemoryX.size(); i++) {
+			System.out.println(dirMemoryX.get(i) + "  :  " + dirMemoryY.get(i));
+		}
+
+	}
+
+	public void AIShoot() {
+
+		System.out.println(dirMemoryX.size() + "  " + dirMemoryY.size());
+		if (dirMemoryX.size() == 0) {
+			randomMove();
+		} else if (hitAndMiss(player, (Button) player.getButtonLocation(dirMemoryX.get(0), dirMemoryY.get(0)))) {
+			System.out.println("AI Shot at X:" + dirMemoryX.get(0) + "Y:  " + dirMemoryY.get(0));
+			deleteMove();
+			playerTurn = true;
+		} else
+			AIMove();
 		if (player.getShipSize() == 0) {
 			System.out.println("You LOSE!");
 			game = false;
 		}
 	}
 
-	// SECOND STAGE
+	public void deleteMove() {
+		dirMemoryX.remove(0);
+		dirMemoryY.remove(0);
+	}
 
+	public boolean AIMove() {
+		deleteMove();
+		if (hitAndMiss(player, (Button) player.getButtonLocation(dirMemoryX.get(0), dirMemoryY.get(0)))) {
+			System.out.println("AI Shot at X:" + dirMemoryX.get(0) + "Y:  " + dirMemoryY.get(0));
+			deleteMove();
+			playerTurn = true;
+			return true;
+		}
+		return false;
+	}
+
+	public void randomMove() {
+		int y = 0;
+		int x = 0;
+		boolean temp = false;
+
+		x = rd.nextInt(settings.get(0));
+		y = rd.nextInt(settings.get(0));
+
+		if (hitAndMiss(player, (Button) player.getButtonLocation(x, y))) {
+			playerTurn = true;
+		} else {
+			randomMove();
+		}
+
+	}
+
+	// SECOND STAGE
 	public void secondStage(Stage s) {
 		// Check to see if settings have been changed.
 		Group root = new Group();
 		root.getChildren().add(getGripPane());
 		root.getChildren().add(nextShip);
-		Scene scene = new Scene(root, 750, 700);
+		Scene scene = new Scene(root, 1000, 700);
 		scene.getStylesheets().add(getClass().getResource("style.css").toExternalForm());
 		s.setScene(scene);
 		s.show();
@@ -394,6 +489,7 @@ public class initializeGame extends Application {
 
 	}
 
+	// returns settings for the board class
 	public static int getSetting(int index) {
 		return settings.get(index);
 	}

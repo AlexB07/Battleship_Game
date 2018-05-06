@@ -31,7 +31,7 @@ public class board extends Parent {
 
 		this.ships = initateShips();
 	}
-	
+
 	public boolean getPlayer() {
 		return this.player;
 	}
@@ -57,17 +57,6 @@ public class board extends Parent {
 		for (int i = 0; i < initializeGame.getSetting(4); i++) {
 			temp.add(new ships(2));
 		}
-
-		/*
-		 * ships airCraft = new ships(5); ships battleShip1 = new ships(4); ships
-		 * battleShip2 = new ships(4); ships desstroyers1 = new ships(3); ships
-		 * desstroyers2 = new ships(3); ships patrol1 = new ships(2); ships patrol2 =
-		 * new ships(2); ships patrol3 = new ships(2);
-		 * 
-		 * temp.add(airCraft); temp.add(desstroyers1); temp.add(desstroyers2);
-		 * temp.add(battleShip1); temp.add(battleShip2); temp.add(patrol1);
-		 * temp.add(patrol2); temp.add(patrol3);
-		 */
 		return temp;
 	}
 
@@ -151,10 +140,10 @@ public class board extends Parent {
 			removeShip(this.ships.indexOf(temp));
 			// sink.start();
 			System.out.println("You sunk a ship");
-			return true;
+			return false;
 		}
 
-		return false;
+		return true;
 	}
 
 	public void getButton(int x, int y, boolean player, ships ship) {
@@ -181,5 +170,9 @@ public class board extends Parent {
 
 	public void removeShip(int i) {
 		this.ships.remove(i);
+	}
+
+	public String checkButton(int x, int y) {
+		return this.b[x][y].getText();
 	}
 }
