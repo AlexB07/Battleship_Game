@@ -6,9 +6,6 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.Scanner;
-
-import javax.swing.GroupLayout.Alignment;
-
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -18,12 +15,17 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.StrokeType;
@@ -34,15 +36,15 @@ import javafx.stage.Stage;
 
 public class initializeGame extends Application {
 	private boolean playerTurn = false;
-	private board player;
-	private board enemy;
-	private int shipCount = 0;
+	private board player, enemy;
+	private int shipCount = 0; // player ship counter
 	private boolean game = false;
-	private Rectangle nextShip = new Rectangle();
+	private Rectangle nextShip = new Rectangle(); // Player next ship placement
 	private static ArrayList<Integer> settings = new ArrayList<Integer>();
-	private ArrayList<Integer> dirMemoryX = new ArrayList<Integer>();
-	private ArrayList<Integer> dirMemoryY = new ArrayList<Integer>();
+	private ArrayList<Integer> dirMemoryX = new ArrayList<Integer>(); // Computer AI moves X co-ordinates
+	private ArrayList<Integer> dirMemoryY = new ArrayList<Integer>(); // COmputer AI moves Y co-ordinates
 	private Random rd = new Random();
+	private static TextArea chatBox;
 
 	public static void main(String[] args) {
 		launch(args);
@@ -68,8 +70,8 @@ public class initializeGame extends Application {
 			@Override
 			public void handle(ActionEvent arg0) {
 				s.close();
-				System.out.println(settings.size());
-				secondStage(s);
+				// System.out.println(settings.size());
+				gameStage(s);
 
 			}
 		});
@@ -90,21 +92,27 @@ public class initializeGame extends Application {
 		pane.add(settingsBtn, 0, 2);
 
 		Button quitBtn = new Button("Exit");
+		quitBtn.setMaxHeight(Double.MAX_VALUE);
+		quitBtn.setMaxWidth(Double.MAX_VALUE);
 		quitBtn.setOnAction(new EventHandler<ActionEvent>() {
 
 			@Override
 			public void handle(ActionEvent arg0) {
-				// TODO maybe add a pop up check to exit window?
-				System.exit(0);
+				Alert alert = new Alert(AlertType.CONFIRMATION, "Are you sure you want to exit?", ButtonType.YES,
+						ButtonType.NO);
+				alert.showAndWait();
 
+				if (alert.getResult() == ButtonType.YES) {
+					System.exit(0);
+				}
 			}
 		});
-
+		pane.add(quitBtn, 0, 3);
 		s.show();
+		s.setMaximized(false);
 
 	}
-
-	// Read File
+	//Read and write file for settings
 	public void readFile() throws FileNotFoundException {
 		settings = new ArrayList<Integer>();
 
@@ -200,7 +208,7 @@ public class initializeGame extends Application {
 		Button submit = new Button("Save Settings");
 		grid.add(submit, 1, 8);
 
-		Text note = new Text("NOTE: Max gridsize is 6 to 19. This will be \n"
+		Text note = new Text("NOTE: Max gridsize is 5 to 15. This will be \n"
 				+ "values out of this range, will be set to default value \n" + "or 10.");
 		note.setFill(Color.DARKGREEN);
 		grid.add(note, 2, 5);
@@ -218,7 +226,7 @@ public class initializeGame extends Application {
 				if (totalSquares <= Math.pow(Integer.parseInt(gridSizeField.getText()), 2)) {
 					settings = new ArrayList<Integer>();
 					if ((gridSizeField.getText() == "") || (Integer.parseInt(gridSizeField.getText()) < 5)
-							|| (Integer.parseInt(gridSizeField.getText()) > 20)) {
+							|| (Integer.parseInt(gridSizeField.getText()) > 15)) {
 						gridSizeField.setText("10");
 					}
 					// load settings
@@ -248,6 +256,7 @@ public class initializeGame extends Application {
 
 		});
 		s.show();
+		s.setMaximized(false);
 
 	}
 
@@ -260,14 +269,16 @@ public class initializeGame extends Application {
 		settings.add(3);
 	}
 
-	public GridPane getGripPane() {
+	public GridPane getGripPane(Stage s) {
+		shipCount = 0; // for new game reset counter
 		GridPane pane = new GridPane();
+		// Add Enemy board to grid pane
 		enemy = new board(false, e -> {
 			if ((game) && (playerTurn)) {
 				Button btn = (Button) e.getSource();
 				if (hitAndMiss(enemy, btn)) {
 					if (enemy.getShipSize() == 0) {
-						System.out.println("You WIN!");
+						appendChatBox("[GAME] Player Wins!!! \n" + "[GAME] Computer Loses.");
 						game = false;
 					} else {
 						playerTurn = false;
@@ -279,13 +290,13 @@ public class initializeGame extends Application {
 			}
 
 		});
-		pane.add(enemy.getBoard(), 1, 1);
+		pane.add(enemy.getBoard(), 2, 1);
 
 		Label enemyTitle = new Label("ENEMY");
 		enemyTitle.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
 		enemyTitle.setAlignment(Pos.CENTER);
-		pane.add(enemyTitle, 1, 0);
-
+		pane.add(enemyTitle, 2, 0);
+		// Add Player board to grid pane
 		player = new board(true, e -> {
 
 			Button btn = (Button) e.getSource();
@@ -294,18 +305,19 @@ public class initializeGame extends Application {
 				if (shipCount < player.getShipSize()) {
 					player.getships().get(shipCount).setNorth(e.getButton() == MouseButton.PRIMARY);
 					if (player.placeShip(player.getships().get(shipCount), GridPane.getColumnIndex(btn),
-							GridPane.getRowIndex(btn), player.getships().get(shipCount).getNorth(), playerTurn,
-							settings.get(0))) {
+							GridPane.getRowIndex(btn), player.getships().get(shipCount).getNorth(), settings.get(0))) {
 						shipCount++;
 
 						if (shipCount >= player.getShipSize()) {
 							showCurrentShip(0);
+							chatBox.appendText("[PLAYER] I've placed all my ships \n");
 							game = true;
 						} else
 							showCurrentShip(player.getships().get(shipCount).getLength());
 					}
 
 				} else {
+
 					game = true;
 				}
 
@@ -315,15 +327,22 @@ public class initializeGame extends Application {
 		Label playerTitle = new Label("PLAYER");
 		playerTitle.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
 		playerTitle.setAlignment(Pos.CENTER);
-
+		pane.add(playerTitle, 0, 0);
+		// Add next ship label to gridPane
 		Label next = new Label("Next: ");
 		next.setFont(Font.font("Tahoma", FontWeight.NORMAL, 12));
 		pane.add(next, 0, 2);
-		pane.add(playerTitle, 0, 0);
-		// Works out where to place next ship, when changing the board size
+		// Add ChatBox to gridPane
+		chatBox = new TextArea();
+		chatBox.setMaxWidth(250); // default width
+		pane.add(chatBox, 3, 1);
+
+		// Works out where to place next ship, when changing the board size and chatbox
+		// width
 		if (settings.get(0) >= 10) {
 			nextShip = new Rectangle(60, 390 + ((settings.get(0) - 10) * 30),
 					(player.getships().get(0).getLength() * 30), 30);
+			chatBox.setMaxWidth(settings.get(0) * 30);
 		} else if (settings.get(0) < 10) {
 			nextShip = new Rectangle(60, 390 - ((10 - settings.get(0)) * 30),
 					(player.getships().get(0).getLength() * 30), 30);
@@ -334,6 +353,54 @@ public class initializeGame extends Application {
 		nextShip.setStrokeWidth(4);
 		nextShip.setStrokeType(StrokeType.INSIDE);
 		pane.add(nextShip, 0, 0);
+
+		VBox vb = new VBox();
+		Button newGameBtn = new Button("New Game");
+		newGameBtn.setMaxWidth(Double.MAX_VALUE);
+
+		newGameBtn.setOnAction(new EventHandler<ActionEvent>() {
+
+			@Override
+			public void handle(ActionEvent event) {
+				s.close();
+				gameStage(s);
+
+			}
+		});
+		Button settingsBtn = new Button("Settings");
+		settingsBtn.setMaxWidth(Double.MAX_VALUE);
+
+		settingsBtn.setOnAction(new EventHandler<ActionEvent>() {
+
+			@Override
+			public void handle(ActionEvent event) {
+				s.close();
+				settingStage(s);
+
+			}
+		});
+		Button exitBtn = new Button("Exit");
+		exitBtn.setMaxWidth(Double.MAX_VALUE);
+
+		exitBtn.setOnAction(new EventHandler<ActionEvent>() {
+
+			@Override
+			public void handle(ActionEvent event) {
+				Alert alert = new Alert(AlertType.CONFIRMATION, "Are you sure you want to exit?", ButtonType.YES,
+						ButtonType.NO);
+				alert.showAndWait();
+
+				if (alert.getResult() == ButtonType.YES) {
+					System.exit(0);
+				}
+
+			}
+		});
+		vb.getChildren().add(newGameBtn);
+		vb.getChildren().add(settingsBtn);
+		vb.getChildren().add(exitBtn);
+		pane.add(vb, 1, 1);
+
 		pane.setVgap(35);
 		pane.setHgap(35);
 
@@ -352,15 +419,12 @@ public class initializeGame extends Application {
 			return false;
 		} else if (btn.getText().equals("1")) {
 			if (bord.buttonHit(tempX, tempY, bord.getPlayer() == false)) {
-				System.out.println("hit ");
+				// System.out.println("hit ");
 				if (bord.getPlayer() == true) {
-					System.out.println("Target Mode Activated");
+					// System.out.println("Target Mode Activated");
 					targetMode(tempX, tempY);
 
 				}
-
-				// Hit battleship message TODO
-				// append text
 
 			}
 			return true;
@@ -387,11 +451,12 @@ public class initializeGame extends Application {
 			x = rd.nextInt(settings.get(0));
 			y = rd.nextInt(settings.get(0));
 			num = rd.nextInt(10);
-			if (enemy.placeShip(enemy.getships().get(shipsCount), x, y, num % 2 == 0, playerTurn, settings.get(0))) {
+			if (enemy.placeShip(enemy.getships().get(shipsCount), x, y, num % 2 == 0, settings.get(0))) {
 				shipsCount++;
 			}
 
 		}
+		chatBox.appendText("[ENEMY] I have placed all my ships \n");
 
 	}
 
@@ -399,7 +464,7 @@ public class initializeGame extends Application {
 	public void targetMode(int xx, int yy) {
 		int x = xx;
 		int y = yy;
-		System.out.println("added");
+		// System.out.println("added");
 		if ((x + 1 < settings.get(0))
 				&& ((player.checkButton(x + 1, y).equals("") || (player.checkButton(x + 1, y).equals("1"))))) {
 			dirMemoryX.add(x + 1);
@@ -419,25 +484,22 @@ public class initializeGame extends Application {
 			dirMemoryY.add(y - 1);
 		}
 
-		for (int i = 0; i < dirMemoryX.size(); i++) {
-			System.out.println(dirMemoryX.get(i) + "  :  " + dirMemoryY.get(i));
-		}
-
 	}
 
 	public void AIShoot() {
 
-		System.out.println(dirMemoryX.size() + "  " + dirMemoryY.size());
+		// System.out.println(dirMemoryX.size() + " " + dirMemoryY.size());
 		if (dirMemoryX.size() == 0) {
 			randomMove();
 		} else if (hitAndMiss(player, (Button) player.getButtonLocation(dirMemoryX.get(0), dirMemoryY.get(0)))) {
-			System.out.println("AI Shot at X:" + dirMemoryX.get(0) + "Y:  " + dirMemoryY.get(0));
+			// System.out.println("AI Shot at X:" + dirMemoryX.get(0) + "Y: " +
+			// dirMemoryY.get(0));
 			deleteMove();
 			playerTurn = true;
 		} else
 			AIMove();
 		if (player.getShipSize() == 0) {
-			System.out.println("You LOSE!");
+			appendChatBox("[GAME] Computer Wins!! \n" + "[GAME] Player Loses.");
 			game = false;
 		}
 	}
@@ -450,7 +512,8 @@ public class initializeGame extends Application {
 	public boolean AIMove() {
 		deleteMove();
 		if (hitAndMiss(player, (Button) player.getButtonLocation(dirMemoryX.get(0), dirMemoryY.get(0)))) {
-			System.out.println("AI Shot at X:" + dirMemoryX.get(0) + "Y:  " + dirMemoryY.get(0));
+			// System.out.println("AI Shot at X:" + dirMemoryX.get(0) + "Y: " +
+			// dirMemoryY.get(0));
 			deleteMove();
 			playerTurn = true;
 			return true;
@@ -461,7 +524,6 @@ public class initializeGame extends Application {
 	public void randomMove() {
 		int y = 0;
 		int x = 0;
-		boolean temp = false;
 
 		x = rd.nextInt(settings.get(0));
 		y = rd.nextInt(settings.get(0));
@@ -475,23 +537,28 @@ public class initializeGame extends Application {
 	}
 
 	// SECOND STAGE
-	public void secondStage(Stage s) {
+	public void gameStage(Stage s) {
 		// Check to see if settings have been changed.
 		Group root = new Group();
-		root.getChildren().add(getGripPane());
+		root.getChildren().add(getGripPane(s));
 		root.getChildren().add(nextShip);
 		Scene scene = new Scene(root, 1000, 700);
 		scene.getStylesheets().add(getClass().getResource("style.css").toExternalForm());
 		s.setScene(scene);
 		s.show();
+		s.setMaximized(true);
 		s.setTitle("BattleShip Game");
 		initiateGame();
 
 	}
 
-	// returns settings for the board class
+	//Used in board class
 	public static int getSetting(int index) {
 		return settings.get(index);
+	}
+	//Used in board class
+	public static void appendChatBox(String s) {
+		chatBox.appendText(s);
 	}
 
 }

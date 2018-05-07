@@ -1,10 +1,8 @@
 package uk.ac.yorksj.sem2.assignment;
 
 import java.util.ArrayList;
-
 import javafx.event.EventHandler;
 import javafx.scene.Parent;
-import javafx.scene.control.Button;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 
@@ -60,7 +58,7 @@ public class board extends Parent {
 		return temp;
 	}
 
-	public boolean placeShip(ships ship, int x, int y, boolean north, boolean pl, int boardSize) {
+	public boolean placeShip(ships ship, int x, int y, boolean north, int boardSize) {
 		int tempX = x;
 		int tempY = y;
 		ship.setNorth(north);
@@ -68,13 +66,13 @@ public class board extends Parent {
 		if (validPlaceShips(ship, tempX, tempY, boardSize)) {
 			if (ship.getNorth()) {
 				for (int i = 0; i < ship.getLength(); i++) {
-					getButton(tempX, tempY + i, pl, ship);
+					getButton(tempX, tempY + i, this.getPlayer(), ship);
 
 				}
 				return true;
 			} else
 				for (int i = 0; i < ship.getLength(); i++) {
-					getButton(tempX + i, tempY, pl, ship);
+					getButton(tempX + i, tempY, this.getPlayer(), ship);
 				}
 			return true;
 		} else
@@ -129,9 +127,13 @@ public class board extends Parent {
 	}
 
 	public boolean buttonHit(int x, int y, boolean player) {
+		String playerName = "";
 		if (player) {
 			new Audio("hit.mp3");
-		}
+			playerName = "[ENEMY]";
+		} else
+			playerName = "[PLAYER]";
+
 		this.b[x][y].setText("2");
 		this.b[x][y].getStyleClass().add("hit");
 		ships temp = this.b[x][y].getShip();
@@ -139,8 +141,9 @@ public class board extends Parent {
 		if (!temp.alive()) {
 			removeShip(this.ships.indexOf(temp));
 			// sink.start();
-			System.out.println("You sunk a ship");
-			return false;
+			initializeGame
+					.appendChatBox(playerName + " You've sunk my battleship. Ships left: " + this.ships.size() + "\n");
+			return true;
 		}
 
 		return true;
@@ -151,7 +154,6 @@ public class board extends Parent {
 		if (player) {
 			this.b[x][y].getStyleClass().clear();
 			this.b[x][y].getStyleClass().add("playerShip");
-			System.out.println("playerShip");
 		}
 		this.b[x][y].setShip(ship);
 	}
