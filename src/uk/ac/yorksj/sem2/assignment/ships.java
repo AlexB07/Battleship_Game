@@ -10,14 +10,9 @@ public class ships {
 		this.ship = type;
 		this.health = type;
 		this.north = false;
-
 	}
 
-	public int getHealth() {
-		return this.health;
-	}
-
-	public boolean alive() {
+	public boolean isAlive() {
 		return (this.health > 0);
 	}
 

@@ -10,20 +10,20 @@ public class board extends Parent {
 
 	private boolean player;
 	private GridPane pane = new GridPane();
-	private boardCells[][] b = new boardCells[initializeGame.getSetting(0)][initializeGame.getSetting(0)];
+	private boardCells[][] btns = new boardCells[initializeGame.getSetting(0)][initializeGame.getSetting(0)];
 	private ArrayList<ships> ships = new ArrayList<ships>();
 
 	public board(boolean who, EventHandler<MouseEvent> handle) {
 		this.player = who;
 
-		for (int y = 0; y < b.length; y++) {
+		for (int y = 0; y < btns.length; y++) {
 
-			for (int x = 0; x < b.length; x++) {
-				b[x][y] = new boardCells();
-				b[x][y].setMinSize(30, 30);
-				b[x][y].setOnMouseClicked(handle);
-				b[x][y].getStyleClass().add("background");
-				pane.add(b[x][y], x, y);
+			for (int x = 0; x < btns.length; x++) {
+				btns[x][y] = new boardCells();
+				btns[x][y].setMinSize(30, 30);
+				btns[x][y].setOnMouseClicked(handle);
+				btns[x][y].getStyleClass().add("background");
+				pane.add(btns[x][y], x, y);
 			}
 		}
 
@@ -66,13 +66,13 @@ public class board extends Parent {
 		if (validPlaceShips(ship, tempX, tempY, boardSize)) {
 			if (ship.getNorth()) {
 				for (int i = 0; i < ship.getLength(); i++) {
-					getButton(tempX, tempY + i, this.getPlayer(), ship);
+					updateButton(tempX, tempY + i, this.getPlayer(), ship);
 
 				}
 				return true;
 			} else
 				for (int i = 0; i < ship.getLength(); i++) {
-					getButton(tempX + i, tempY, this.getPlayer(), ship);
+					updateButton(tempX + i, tempY, this.getPlayer(), ship);
 				}
 			return true;
 		} else
@@ -90,7 +90,7 @@ public class board extends Parent {
 					return false;
 				}
 
-				if (this.b[x][y + i].getText().equals("1")) {
+				if (this.btns[x][y + i].getText().equals("1")) {
 					return false;
 				}
 
@@ -105,7 +105,7 @@ public class board extends Parent {
 					return false;
 				}
 				// Test to see space is empty
-				if (this.b[x + i][y].getText().equals("1")) {
+				if (this.btns[x + i][y].getText().equals("1")) {
 					return false;
 				}
 
@@ -122,8 +122,8 @@ public class board extends Parent {
 		if (player) {
 			new Audio("miss.mp3");
 		}
-		this.b[x][y].setText("0");
-		this.b[x][y].getStyleClass().add("miss");
+		this.btns[x][y].setText("0");
+		this.btns[x][y].getStyleClass().add("miss");
 	}
 
 	public boolean buttonHit(int x, int y, boolean player) {
@@ -134,11 +134,11 @@ public class board extends Parent {
 		} else
 			playerName = "[PLAYER]";
 
-		this.b[x][y].setText("2");
-		this.b[x][y].getStyleClass().add("hit");
-		ships temp = this.b[x][y].getShip();
+		this.btns[x][y].setText("2");
+		this.btns[x][y].getStyleClass().add("hit");
+		ships temp = this.btns[x][y].getShip();
 		temp.hit();
-		if (!temp.alive()) {
+		if (!temp.isAlive()) {
 			removeShip(this.ships.indexOf(temp));
 			// sink.start();
 			initializeGame
@@ -149,17 +149,17 @@ public class board extends Parent {
 		return true;
 	}
 
-	public void getButton(int x, int y, boolean player, ships ship) {
-		this.b[x][y].setText("1");
+	public void updateButton(int x, int y, boolean player, ships ship) {
+		this.btns[x][y].setText("1");
 		if (player) {
-			this.b[x][y].getStyleClass().clear();
-			this.b[x][y].getStyleClass().add("playerShip");
+			this.btns[x][y].getStyleClass().clear();
+			this.btns[x][y].getStyleClass().add("playerShip");
 		}
-		this.b[x][y].setShip(ship);
+		this.btns[x][y].setShip(ship);
 	}
 
 	public Object getButtonLocation(int x, int y) {
-		return this.b[x][y];
+		return this.btns[x][y];
 	}
 
 	public int getShipSize() {
@@ -175,6 +175,6 @@ public class board extends Parent {
 	}
 
 	public String checkButton(int x, int y) {
-		return this.b[x][y].getText();
+		return this.btns[x][y].getText();
 	}
 }

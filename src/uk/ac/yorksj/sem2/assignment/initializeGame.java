@@ -112,7 +112,127 @@ public class initializeGame extends Application {
 		s.setMaximized(false);
 
 	}
-	//Read and write file for settings
+
+	// Updates current next ship display on user interface
+	public void showCurrentShip(int length) {
+		nextShip.setWidth(length * 30);
+	}
+
+	public boolean hitAndMiss(board bord, Button btn) {
+		int tempX = GridPane.getColumnIndex(btn);
+		int tempY = GridPane.getRowIndex(btn);
+		if (btn.getText().equals("0") || btn.getText().equals("2")) {
+			return false;
+		} else if (btn.getText().equals("1")) {
+			if (bord.buttonHit(tempX, tempY, bord.getPlayer() == false)) {
+				// System.out.println("hit ");
+				if (bord.getPlayer() == true) {
+					// System.out.println("Target Mode Activated");
+					targetMode(tempX, tempY);
+
+				}
+
+			}
+			return true;
+
+		} else
+			bord.buttonMiss(tempX, tempY, bord.getPlayer() == false);
+		return true;
+
+	}
+
+	public void placeEnemyShips() {
+
+		int shipsCount = 0;
+		int x = 0;
+		int y = 0;
+		int num = 0;
+		Random rd = new Random();
+		while (shipsCount < enemy.getShipSize()) {
+			x = rd.nextInt(settings.get(0));
+			y = rd.nextInt(settings.get(0));
+			num = rd.nextInt(10);
+			if (enemy.placeShip(enemy.getships().get(shipsCount), x, y, num % 2 == 0, settings.get(0))) {
+				shipsCount++;
+			}
+
+		}
+		chatBox.appendText("[ENEMY] I have placed all my ships \n");
+
+	}
+
+	// Computer AI
+	public void targetMode(int centerX, int centerY) {
+		int x = centerX;
+		int y = centerY;
+		// System.out.println("added");
+		if ((x + 1 < settings.get(0))
+				&& ((player.checkButton(x + 1, y).equals("") || (player.checkButton(x + 1, y).equals("1"))))) {
+			dirMemoryX.add(x + 1);
+			dirMemoryY.add(y);
+		}
+		if ((y + 1 < settings.get(0))
+				&& ((player.checkButton(x, y + 1).equals("") || (player.checkButton(x, y + 1).equals("1"))))) {
+			dirMemoryX.add(x);
+			dirMemoryY.add(y + 1);
+		}
+		if ((x - 1 >= 0) && ((player.checkButton(x - 1, y).equals("") || (player.checkButton(x - 1, y).equals("1"))))) {
+			dirMemoryX.add(x - 1);
+			dirMemoryY.add(y);
+		}
+		if ((y - 1 >= 0) && ((player.checkButton(x, y - 1).equals("") || (player.checkButton(x, y - 1).equals("1"))))) {
+			dirMemoryX.add(x);
+			dirMemoryY.add(y - 1);
+		}
+
+	}
+
+	public void AIShoot() {
+		if (dirMemoryX.size() == 0) {
+			randomMove();
+		} else if (hitAndMiss(player, (Button) player.getButtonLocation(dirMemoryX.get(0), dirMemoryY.get(0)))) {
+			deleteMove();
+			playerTurn = true;
+		} else
+			AIMove();
+		if (player.getShipSize() == 0) {
+			appendChatBox("[GAME] Computer Wins!! \n" + "[GAME] Player Loses.");
+			game = false;
+		}
+	}
+
+	public void deleteMove() {
+		dirMemoryX.remove(0);
+		dirMemoryY.remove(0);
+	}
+
+	public boolean AIMove() {
+		deleteMove();
+		if (hitAndMiss(player, (Button) player.getButtonLocation(dirMemoryX.get(0), dirMemoryY.get(0)))) {
+			deleteMove();
+			playerTurn = true;
+			return true;
+		}
+		return false;
+	}
+
+	public void randomMove() {
+		int y = 0;
+		int x = 0;
+
+		x = rd.nextInt(settings.get(0));
+		y = rd.nextInt(settings.get(0));
+
+		if (hitAndMiss(player, (Button) player.getButtonLocation(x, y))) {
+			playerTurn = true;
+		} else {
+			randomMove();
+		}
+
+	}
+
+	// SETTINGS STAGE
+	// Read and write file for settings
 	public void readFile() throws FileNotFoundException {
 		settings = new ArrayList<Integer>();
 
@@ -209,7 +329,7 @@ public class initializeGame extends Application {
 		grid.add(submit, 1, 8);
 
 		Text note = new Text("NOTE: Max gridsize is 5 to 15. This will be \n"
-				+ "values out of this range, will be set to default value \n" + "or 10.");
+				+ "values out of this range, will be set to default value \n" + "or 10. Also numbers only.");
 		note.setFill(Color.DARKGREEN);
 		grid.add(note, 2, 5);
 
@@ -223,12 +343,17 @@ public class initializeGame extends Application {
 				totalSquares = (airCraftField.getValue() * 5) + (battleShipsField.getValue() * 4)
 						+ (destroyerField.getValue() * 3) + (patrolField.getValue() * 2) + 10;
 
+				// gridSizeField validation numbers only
+				if (!gridSizeField.getText().matches("[0-9]+")) {
+					gridSizeField.setText("10");
+				}
 				if (totalSquares <= Math.pow(Integer.parseInt(gridSizeField.getText()), 2)) {
 					settings = new ArrayList<Integer>();
 					if ((gridSizeField.getText() == "") || (Integer.parseInt(gridSizeField.getText()) < 5)
 							|| (Integer.parseInt(gridSizeField.getText()) > 15)) {
 						gridSizeField.setText("10");
 					}
+
 					// load settings
 					settings.add(Integer.parseInt(gridSizeField.getText()));
 					settings.add(airCraftField.getValue());
@@ -269,8 +394,10 @@ public class initializeGame extends Application {
 		settings.add(3);
 	}
 
+	// GAME STAGE
 	public GridPane getGripPane(Stage s) {
-		shipCount = 0; // for new game reset counter
+		// for new game reset counter
+		shipCount = 0;
 		GridPane pane = new GridPane();
 		// Add Enemy board to grid pane
 		enemy = new board(false, e -> {
@@ -354,7 +481,7 @@ public class initializeGame extends Application {
 		nextShip.setStrokeType(StrokeType.INSIDE);
 		pane.add(nextShip, 0, 0);
 
-		VBox vb = new VBox();
+		VBox buttonGrid = new VBox();
 		Button newGameBtn = new Button("New Game");
 		newGameBtn.setMaxWidth(Double.MAX_VALUE);
 
@@ -396,10 +523,10 @@ public class initializeGame extends Application {
 
 			}
 		});
-		vb.getChildren().add(newGameBtn);
-		vb.getChildren().add(settingsBtn);
-		vb.getChildren().add(exitBtn);
-		pane.add(vb, 1, 1);
+		buttonGrid.getChildren().add(newGameBtn);
+		buttonGrid.getChildren().add(settingsBtn);
+		buttonGrid.getChildren().add(exitBtn);
+		pane.add(buttonGrid, 1, 1);
 
 		pane.setVgap(35);
 		pane.setHgap(35);
@@ -407,136 +534,6 @@ public class initializeGame extends Application {
 		return pane;
 	}
 
-	// Updates current next ship display on user interface
-	public void showCurrentShip(int length) {
-		nextShip.setWidth(length * 30);
-	}
-
-	public boolean hitAndMiss(board bord, Button btn) {
-		int tempX = GridPane.getColumnIndex(btn);
-		int tempY = GridPane.getRowIndex(btn);
-		if (btn.getText().equals("0") || btn.getText().equals("2")) {
-			return false;
-		} else if (btn.getText().equals("1")) {
-			if (bord.buttonHit(tempX, tempY, bord.getPlayer() == false)) {
-				// System.out.println("hit ");
-				if (bord.getPlayer() == true) {
-					// System.out.println("Target Mode Activated");
-					targetMode(tempX, tempY);
-
-				}
-
-			}
-			return true;
-
-		} else
-			bord.buttonMiss(tempX, tempY, bord.getPlayer() == false);
-		return true;
-
-	}
-
-	public void initiateGame() {
-		placeEnemyShips();
-		playerTurn = true;
-	}
-
-	public void placeEnemyShips() {
-
-		int shipsCount = 0;
-		int x = 0;
-		int y = 0;
-		int num = 0;
-		Random rd = new Random();
-		while (shipsCount < enemy.getShipSize()) {
-			x = rd.nextInt(settings.get(0));
-			y = rd.nextInt(settings.get(0));
-			num = rd.nextInt(10);
-			if (enemy.placeShip(enemy.getships().get(shipsCount), x, y, num % 2 == 0, settings.get(0))) {
-				shipsCount++;
-			}
-
-		}
-		chatBox.appendText("[ENEMY] I have placed all my ships \n");
-
-	}
-
-	// Computer AI
-	public void targetMode(int xx, int yy) {
-		int x = xx;
-		int y = yy;
-		// System.out.println("added");
-		if ((x + 1 < settings.get(0))
-				&& ((player.checkButton(x + 1, y).equals("") || (player.checkButton(x + 1, y).equals("1"))))) {
-			dirMemoryX.add(x + 1);
-			dirMemoryY.add(y);
-		}
-		if ((y + 1 < settings.get(0))
-				&& ((player.checkButton(x, y + 1).equals("") || (player.checkButton(x, y + 1).equals("1"))))) {
-			dirMemoryX.add(x);
-			dirMemoryY.add(y + 1);
-		}
-		if ((x - 1 >= 0) && ((player.checkButton(x - 1, y).equals("") || (player.checkButton(x - 1, y).equals("1"))))) {
-			dirMemoryX.add(x - 1);
-			dirMemoryY.add(y);
-		}
-		if ((y - 1 >= 0) && ((player.checkButton(x, y - 1).equals("") || (player.checkButton(x, y - 1).equals("1"))))) {
-			dirMemoryX.add(x);
-			dirMemoryY.add(y - 1);
-		}
-
-	}
-
-	public void AIShoot() {
-
-		// System.out.println(dirMemoryX.size() + " " + dirMemoryY.size());
-		if (dirMemoryX.size() == 0) {
-			randomMove();
-		} else if (hitAndMiss(player, (Button) player.getButtonLocation(dirMemoryX.get(0), dirMemoryY.get(0)))) {
-			// System.out.println("AI Shot at X:" + dirMemoryX.get(0) + "Y: " +
-			// dirMemoryY.get(0));
-			deleteMove();
-			playerTurn = true;
-		} else
-			AIMove();
-		if (player.getShipSize() == 0) {
-			appendChatBox("[GAME] Computer Wins!! \n" + "[GAME] Player Loses.");
-			game = false;
-		}
-	}
-
-	public void deleteMove() {
-		dirMemoryX.remove(0);
-		dirMemoryY.remove(0);
-	}
-
-	public boolean AIMove() {
-		deleteMove();
-		if (hitAndMiss(player, (Button) player.getButtonLocation(dirMemoryX.get(0), dirMemoryY.get(0)))) {
-			// System.out.println("AI Shot at X:" + dirMemoryX.get(0) + "Y: " +
-			// dirMemoryY.get(0));
-			deleteMove();
-			playerTurn = true;
-			return true;
-		}
-		return false;
-	}
-
-	public void randomMove() {
-		int y = 0;
-		int x = 0;
-
-		x = rd.nextInt(settings.get(0));
-		y = rd.nextInt(settings.get(0));
-
-		if (hitAndMiss(player, (Button) player.getButtonLocation(x, y))) {
-			playerTurn = true;
-		} else {
-			randomMove();
-		}
-
-	}
-
-	// SECOND STAGE
 	public void gameStage(Stage s) {
 		// Check to see if settings have been changed.
 		Group root = new Group();
@@ -548,15 +545,17 @@ public class initializeGame extends Application {
 		s.show();
 		s.setMaximized(true);
 		s.setTitle("BattleShip Game");
-		initiateGame();
+		placeEnemyShips();
+		playerTurn = true;
 
 	}
 
-	//Used in board class
+	// Used in board class
 	public static int getSetting(int index) {
 		return settings.get(index);
 	}
-	//Used in board class
+
+	// Used in board class
 	public static void appendChatBox(String s) {
 		chatBox.appendText(s);
 	}
