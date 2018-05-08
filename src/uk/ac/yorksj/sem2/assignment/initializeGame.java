@@ -208,7 +208,9 @@ public class initializeGame extends Application {
 
 	public boolean AIMove() {
 		deleteMove();
-		if (hitAndMiss(player, (Button) player.getButtonLocation(dirMemoryX.get(0), dirMemoryY.get(0)))) {
+		if (dirMemoryX.size() == 0) {
+			randomMove();
+		} else if (hitAndMiss(player, (Button) player.getButtonLocation(dirMemoryX.get(0), dirMemoryY.get(0)))) {
 			deleteMove();
 			playerTurn = true;
 			return true;

@@ -140,7 +140,6 @@ public class board extends Parent {
 		temp.hit();
 		if (!temp.isAlive()) {
 			removeShip(this.ships.indexOf(temp));
-			// sink.start();
 			initializeGame
 					.appendChatBox(playerName + " You've sunk my battleship. Ships left: " + this.ships.size() + "\n");
 			return true;
